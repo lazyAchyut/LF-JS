@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Data Binding Demo</title>
+</head>
+<body >
+	<div lf-app="">
+		<div style="border:4px solid orange; margin-bottom: 30px; padding: 20px;">
+			College Model: <input type="text" lf-model="college"> <br/>
+			College Model: <input type="text" lf-model="college"> <br/>
+			College  Bind :  <input type="text" lf-bind="college"> <br/>
+			College Bind:  <label lf-bind="college"></label><br/>
+			<p>
+			College3 Model: <input type="text" lf-model="college3"> <br/>
+			College3 Bind: <input type="text" lf-bind="college3"> <br/>
+			<br/>
+			<button onclick="getter()">Getter for college 3</button> <br/>
+			<button onclick="setter()">Setter for college 3</button> <br/>
+		</div>
+	</div> <!-- end of lf-app -->
+
+	<p>This model is outside lf-app</p>
+	College Model: <input type="text" lf-model="college"> <br/>
+	College Bind:  <label lf-bind="college"></label><br/>
+
+<script type="text/javascript" src="js/myScript.js"></script>
+</body>
+</html>
