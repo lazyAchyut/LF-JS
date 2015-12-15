@@ -1,28 +1,45 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Data Binding Demo</title>
+	<title></title>
+	<style type="text/css">
+		object {
+		  min-width: 100%;
+		  min-height: 101%; //not 100% but more than 101
+		}
+		fieldset{
+			margin-bottom: 20px;
+		}
+	</style>
 </head>
-<body >
-	<div lf-app="">
-		<div style="border:4px solid orange; margin-bottom: 30px; padding: 20px;">
-			College Model: <input type="text" lf-model="college"> <br/>
-			College Model: <input type="text" lf-model="college"> <br/>
-			College  Bind :  <input type="text" lf-bind="college"> <br/>
-			College Bind:  <label lf-bind="college"></label><br/>
+<body>
+<div lf-app="">
+		<h1>Custom AngularJs (LF-JS) Prototype</h1>
+		<fieldset>
+			<legend>Two Data Binding Demo</legend>
+			Model 1: <input type="text" lf-model="model1"> <br/>
+			Mode 1: <input type="text" lf-model="model1"> <br/>
+			Bind 1 :  <input type="text" lf-bind="model1"> <br/>
+			Bind 1:  <label lf-bind="model1"></label><br/>
 			<p>
-			College3 Model: <input type="text" lf-model="college3"> <br/>
-			College3 Bind: <input type="text" lf-bind="college3"> <br/>
-			<br/>
-			<button onclick="getter()">Getter for college 3</button> <br/>
-			<button onclick="setter()">Setter for college 3</button> <br/>
-		</div>
-	</div> <!-- end of lf-app -->
+			Model 2: <input type="text" lf-model="college3"> <br/>
+			Bind 2: <input type="text" lf-bind="college3"> <br/>
+		</fieldset>
+		<fieldset>
+			<legend>Routing Demo</legend>
+			<h5 align="center">This is lf-view</h5>
+			<div lf-view style="border:2px solid orange; width:400px; margin: 0 auto; background: #def;"> </div>
+			<div style="text-align: center">
+				<a href="#/user/123"> User id 123 </a> ||  
+				<a href="#/login"> Login </a> ||  
+				<a href="#/logout"> Logout </a> ||
+				<a href="#/jpt-link"> Jpt Link</a>(Rediects to /logout)
+			</div>
+		</fieldset>
+		<p>* Run this demo on Google Crome</p>
+		</div> <!-- end of lf-app -->
 
-	<p>This model is outside lf-app</p>
-	College Model: <input type="text" lf-model="college"> <br/>
-	College Bind:  <label lf-bind="college"></label><br/>
-
-<script type="text/javascript" src="js/dataBindingService.js"></script>
+<script type="text/javascript" src="js/myApp.js"></script>
+<script type="text/javascript" src="js/lfLibrary.js"></script>
 </body>
 </html>
