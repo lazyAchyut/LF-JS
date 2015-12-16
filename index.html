@@ -10,6 +10,7 @@
 		fieldset{
 			margin-bottom: 20px;
 		}
+
 	</style>
 </head>
 <body>
@@ -22,8 +23,9 @@
 			Bind 1 :  <input type="text" lf-bind="model1"> <br/>
 			Bind 1:  <label lf-bind="model1"></label><br/>
 			<p>
-			Model 2: <input type="text" lf-model="college3"> <br/>
-			Bind 2: <input type="text" lf-bind="college3"> <br/>
+			Model 2: <input type="text" lf-model="model2"> <br/>
+			Bind 2: <input type="text" lf-bind="model2"> <br/>
+
 		</fieldset>
 		<fieldset>
 			<legend>Routing Demo</legend>
@@ -35,6 +37,16 @@
 				<a href="#/logout"> Logout </a> ||
 				<a href="#/jpt-link"> Jpt Link</a>(Rediects to /logout)
 			</div>
+		</fieldset>
+
+		<fieldset>
+			<legend>Repeat Demo</legend>
+			<div lf-repeat="user" class="user">
+	
+				<div lf-bind="name"></div> 
+				<span lf-bind="address"></span> 
+				<a href="" lf-bind="link"></a>
+			</div>	
 		</fieldset>
 		<p>* Run this demo on Google Crome</p>
 		</div> <!-- end of lf-app -->

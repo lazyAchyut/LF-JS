@@ -2,8 +2,36 @@
 
 //data binding section
 	var $scope = {}; //scope object to hold all values
-	$scope.model2 = "Pokhrel";
-	$scope.model1 = "achyut";
+	$scope.model1 = "Default Values";
+	$scope.user = [{
+		name:'Achyut',
+		address : 'Dang',
+		link : '#/user/0'
+	},
+	{
+		name : 'Gaurab',
+		address : 'Kathmandu',
+		link : '#/user/1'
+	},
+	{
+		name : 'Kiran',
+		address : 'Jhapa',
+		link : '#/user/2'
+	}];
+
+	$scope.student = [{
+		name:'sd',
+		address : 'f'
+	},
+	{
+		name : 's',
+		address : 'w'
+	},
+	{
+		name : 'e',
+		address : 'g'
+	}];
+
 	var $rootElement = [];  //hold the scope of lf-app
 	var $watchModels = [];  //models and binds to watchModels for
 	var $watchBinds = [];
@@ -33,6 +61,7 @@
 	   	 }); //end of change.foreach
 	}); //end of object.observe
 
+	//updates the model and binds form scope object intially
 	var $bootstrap = function(){
 		for(var i = 0, len = $watchModels.length; i < len; i++){
 			var $tag = $watchModels[i].getAttribute('lf-model'); 	
@@ -161,6 +190,38 @@
 		return $xhr;
 	}
 
+//lf-repeate
+var $repeatService = function(){
+	var $allRepeats = $rootElement.querySelectorAll('[lf-repeat]');
+	for(var i=0;i<$allRepeats.length;i++){ 
+		var $repeatAttribute = $allRepeats[i].getAttribute('lf-repeat'); 
+		$repeatAttribute = $repeatAttribute.trim(); 
+		if($scope.hasOwnProperty($repeatAttribute)){
+			var $innerBinds = $allRepeats[i].querySelectorAll('[lf-bind]');
+			for(var j=0;j<$scope[$repeatAttribute].length;j++){
+				for(var noOfBinds=0;noOfBinds<$innerBinds.length;noOfBinds++){
+					var $bindAttr = $innerBinds[noOfBinds].getAttribute('lf-bind');
+					$bindAttr = $bindAttr.trim();
+					if($scope[$repeatAttribute][j].hasOwnProperty($bindAttr)){
+						var temp = document.createElement($innerBinds[noOfBinds].tagName);
+						if($innerBinds[noOfBinds].tagName === "a"){
+							
+						}
+						else
+							var text = document.createTextNode($scope[$repeatAttribute][j][$bindAttr]);  
+						temp.appendChild(text);
+						$allRepeats[i].appendChild(temp);
+
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+
 	//to make sure that all files are loaded properly
 	var tid = setInterval( function () {
 	    if ( document.readyState !== 'complete' ) return;
@@ -172,6 +233,7 @@
 		console.log("$routeProvider is not defined, Do nothing.");
 
 		$bootstrap();
+		$repeatService();
 	}, 100 );	
 
 })(window, document);
