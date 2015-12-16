@@ -2,44 +2,62 @@
 
 //data binding section
 	var $scope = {}; //scope object to hold all values
-	var $rootElement;  //hold the scope of lf-app
-	var $watch;  //models and binds to watch for
+	$scope.model2 = "Pokhrel";
+	$scope.model1 = "achyut";
+	var $rootElement = [];  //hold the scope of lf-app
+	var $watchModels = [];  //models and binds to watchModels for
+	var $watchBinds = [];
 	var $xhr; //xmlhttrrequest object
 
 	$rootElement = document.querySelector('[lf-app]');
 
-	$watch = $rootElement.querySelectorAll('[lf-model]'); 
-	for(var i = 0, len = $watch.length; i < len; i++){
-		$scope[$watch[i].getAttribute('lf-model')] = $watch[i].value; 
-		$watch[i].count = i;
-		$watch[i].addEventListener('keyup', function(evt)
+	$watchModels = $rootElement.querySelectorAll('[lf-model]'); 
+	$watchBinds = $rootElement.querySelectorAll('[lf-bind]'); 
+
+	for(var i = 0, len = $watchModels.length; i < len; i++){
+		// $scope[$watchModels[i].getAttribute('lf-model')] = $watchModels[i].value; 
+		$watchModels[i].count = i;
+		$watchModels[i].addEventListener('keyup', function(evt)
 		{ 
 			var index = evt.target.count;
-			$scope[$watch[index].getAttribute('lf-model')] = $watch[index].value;
+			$scope[$watchModels[index].getAttribute('lf-model')] = $watchModels[index].value;
 		});
 	}
 
 	//observe changes in $scope object, if any change is detected it updates respective models and bind
 	Object.observe($scope, function(changes){
-    changes.forEach(function(change) {
-    	// console.log(change.type, ' : ',change.name,' : ', change.oldValue);
-    	
-    	//search and update all bind of changed variable
-    	var binders = $rootElement.querySelectorAll('[lf-bind='+change.name+']');
-    	for(var i = 0, len = binders.length; i < len; i++){
-			binders[i].value = $scope[change.name];
-			binders[i].innerHTML = $scope[change.name];
-    	}    	
-    	
-    	//search and update all models of changed variable
-    	var models = $rootElement.querySelectorAll('[lf-model='+change.name+']');
-    	for(var i = 0, len = models.length; i < len; i++){
-			models[i].value = $scope[change.name];
-			models[i].innerHTML = $scope[change.name];
-    	}
-   	 }); //end of change.foreach
+	    changes.forEach(function(change) {
+	    	// console.log(change.type, ' : ',change.name,' : ', change.oldValue);
+	    	$updateView(change.name);
+
+	   	 }); //end of change.foreach
 	}); //end of object.observe
 
+	var $bootstrap = function(){
+		for(var i = 0, len = $watchModels.length; i < len; i++){
+			var $tag = $watchModels[i].getAttribute('lf-model'); 	
+			if($scope.hasOwnProperty($tag))
+				$updateView($tag);
+		}
+
+		for(var i = 0, len = $watchBinds.length; i < len; i++){
+			var $tag = $watchBinds[i].getAttribute('lf-bind'); 	
+			if($scope.hasOwnProperty($tag))
+				$updateView($tag);
+		}
+	}	
+
+	//search and update all bind and models of changed variable
+	$updateView = function($tag){
+		var $views = ['[lf-model='+$tag+']','[lf-bind='+$tag+']'];
+		for(var i=0;i<$views.length;i++){ 
+			var binders = $rootElement.querySelectorAll($views[i]);
+	    	for(var j = 0, len = binders.length; j < len; j++){
+				binders[j].value = $scope[$tag];
+				binders[j].innerHTML = $scope[$tag];
+	    	}
+	    }    	
+	}
 
 //routing section
 	//get all link and when click event is detected call $routeservice method
@@ -152,6 +170,8 @@
 		}
 		else
 		console.log("$routeProvider is not defined, Do nothing.");
+
+		$bootstrap();
 	}, 100 );	
 
 })(window, document);
