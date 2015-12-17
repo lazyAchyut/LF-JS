@@ -2,8 +2,7 @@
 
 function Main(){
 	var $routeObj;
-	var $repeateObj;
-	this.$dataObj;
+	var $dataObj;
 	this.$scope;
 	this.$rootElement = [];
 	var that = this;
@@ -27,56 +26,62 @@ function Main(){
 
 	this.$rootElement = document.querySelector('[lf-app]')
 
-	this.$initRoute = function(){
+	this.$initializeRoute = function(){
 		$routeObj = new LfRoute();
-		$routeObj.$setRoute();
+		$routeObj.$addListener();
 		$routeObj.$doRoute();
 	}
 
-	this.$initDataBind = function(){
-		$dataObj = new LfBind(that.$rootElement);
-		$dataObj.$init();
-		$dataObj.$bootstrap();
+	this.$initializeDataBind = function(){
+		$dataObj = new LfBind();
+		$dataObj.$registerWatcher();
+		$dataObj.$addListener();
+		$dataObj.$initializeFirstView();
 	}
 
-	this.$invokeDoRoute = function(){
-		$routeObj.$doRoute();
+	this.$invokeUpdateView = function(tag){
+		$dataObj.$updateView(tag);
 	}
 
-}
+	this.$updateScope = function(key,value){
+		that.$scope[key] = value;
+	}
+
+} //end of Main Class
 
 
 var $main = new Main();
-$main.$initRoute();
-$main.$initDataBind();
+$main.$initializeRoute();
+$main.$initializeDataBind();
 
 
 
 //data binding section
-function LfBind(re){
-	var $watchModels = [];  //models and binds to watchModels for
-	var $watchBinds = [];
-	var $rootElement = re; 
+function LfBind(){
+	var $watchModels = [];  //models to watch for
+	var $watchBinds = [];   //binds to watch for
 	var that = this;
 
-	this.$init = function(){
-		$watchModels = $rootElement.querySelectorAll('[lf-model]'); 
-		$watchBinds = $rootElement.querySelectorAll('[lf-bind]'); 
+	this.$registerWatcher = function(){
+		$watchModels = $main.$rootElement.querySelectorAll('[lf-model]'); 
+		$watchBinds = $main.$rootElement.querySelectorAll('[lf-bind]'); 
+	}
 
+	this.$addListener = function(){
 		for(var i = 0, len = $watchModels.length; i < len; i++){
-			
 			$watchModels[i].count = i;
 			$watchModels[i].addEventListener('keyup', function(evt)
 			{ 
 				var index = evt.target.count;
-				$main.$scope[$watchModels[index].getAttribute('lf-model')] = $watchModels[index].value;
+				var key = $watchModels[index].getAttribute('lf-model');
+				var value = $watchModels[index].value;
+				$main.$updateScope(key,value);
 			});
 		}
 	}
 	
-
-	//updates the model and binds form scope object intially
-	this.$bootstrap = function(){
+	//updates the model and binds with data if initially present in scope object
+	this.$initializeFirstView = function(){
 		for(var i = 0, len = $watchModels.length; i < len; i++){
 			var $tag = $watchModels[i].getAttribute('lf-model'); 	
 			if($main.$scope.hasOwnProperty($tag))
@@ -93,16 +98,20 @@ function LfBind(re){
 
 	//search and update all bind and models of changed variable
 	this.$updateView = function($tag){
-		var $views = ['[lf-model='+$tag+']','[lf-bind='+$tag+']'];
-		for(var i=0;i<$views.length;i++){ 
-			var binders = $rootElement.querySelectorAll($views[i]);
-	    	for(var j = 0, len = binders.length; j < len; j++){
-				binders[j].value = $main.$scope[$tag];
-				binders[j].innerHTML = $main.$scope[$tag];
-	    	}
-	    }    	
-	}
+	   	for(var j = 0, len = $watchModels.length; j < len; j++){
+			if($tag === $watchModels[j].getAttribute('lf-model')){
+				$watchModels[j].value = $main.$scope[$tag];
+				$watchModels[j].innerHTML = $main.$scope[$tag];
+			}
+    	} 
 
+    	for(var j = 0, len = $watchBinds.length; j < len; j++){
+			if($tag === $watchBinds[j].getAttribute('lf-bind')){
+				$watchBinds[j].value = $main.$scope[$tag];
+				$watchBinds[j].innerHTML = $main.$scope[$tag];
+			}
+    	}   	
+	}
 
 
 } //end of LfBind
@@ -113,7 +122,7 @@ function LfBind(re){
 Object.observe($main.$scope, function(changes){
     changes.forEach(function(change) {
     	// console.log(change.type, ' : ',change.name,' : ', change.oldValue);
-    	$dataObj.$updateView(change.name);
+    	$main.$invokeUpdateView(change.name);
 
    	 }); //end of change.foreach
 }); //end of object.observe
@@ -125,36 +134,35 @@ Object.observe($main.$scope, function(changes){
 //routing section
 
 function LfRoute(){
-		this.$href; //get current url
-	    this.$actualRoute = {}; //holds route and templateUrl of matched route
-	    this.$urlAfterHash;
-		this.$userDefinedRoutes;
-		this.$xhr;
+	    var $actualRoute = {}; //holds route and templateUrl of matched route
+	    var $urlAfterHash;
+		var $userDefinedRoutes;
+		var $xhr;
+		var that = this;
 
-	    var that = this;
-
-	    this.$setRoute = function(){ 
+	    this.$addListener = function(){ 
 	    	//get all link and when click event is detected call $routeservice method
 			var $links = $main.$rootElement.querySelectorAll('a');
 			for(var i = 0, len = $links.length; i < len; i++){
 				$links[i].addEventListener('click',function(evt){
-					// $routeObj  = new LFRoute() ||= {}; 
-					setTimeout($main.$invokeDoRoute, 0);
+					setTimeout(that.$doRoute, 0);
 				});
 			}
 	    }
 
 		this.$doRoute = function(){ 
-			that.$href = document.URL;
-			that.$userDefinedRoutes = $routeProvider(); //$routeProvider() returns user defined routes, lies in user's controller
+			var $href;
 			var $urlAfterHash;
 			var $actualRoute;
-			var $parsedUrl = that.$parseUrl(that.$href);
+			$href = document.URL
+			var $parsedUrl = that.$parseStr($href,'#');
 			var	$currentDir = $parsedUrl[0].substr(0,$parsedUrl[0].lastIndexOf('/')); //current directory
+			
+			$userDefinedRoutes = $routeProvider(); //$routeProvider() returns user defined routes, lies in user's controller
 
 			if(($parsedUrl[1] != null && $parsedUrl[1] != '')){ 
 				$urlAfterHash = $parsedUrl[1]; 
-				$actualRoute = that.$parseUrlAfterHash($urlAfterHash,that.$userDefinedRoutes);
+				$actualRoute = that.$parseUrlAfterHash($urlAfterHash , $userDefinedRoutes);
 				var $container = document.querySelector('[lf-view]');
 				
 				if($actualRoute != null){
@@ -162,22 +170,26 @@ function LfRoute(){
 					that.$loadView($container, $path);
 				}
 				else{ 
-					var $redirectPath = that.$getOtherwisePath(that.$userDefinedRoutes);
+					var $redirectPath = that.$getOtherwisePath($userDefinedRoutes);
 					if($redirectPath != null ){
 						window.location.href = $parsedUrl[0] + '#' + $redirectPath;
-						$actualRoute = that.$parseUrlAfterHash($redirectPath,that.$userDefinedRoutes);
+						$actualRoute = that.$parseUrlAfterHash($redirectPath,$userDefinedRoutes);
 						var $path =  $currentDir + $actualRoute.templateUrl.trim();
 						that.$loadView($container, $path);
 					}		
 				}	
 			}
 		}
-	
+
+		this.$parseStr = function(str,delimiter){
+			return str.split(delimiter);
+		}
+
 		//returns matched route's path and templateUrl
 		this.$parseUrlAfterHash = function($urlAfterHash,$userDefinedRoutes){
-			$urlAfterHash = $urlAfterHash.split('/');
+			$urlAfterHash = that.$parseStr($urlAfterHash , '/');
 			for(var i = 0; i< $userDefinedRoutes.length-1;i++){  //dont check otherwise part in $userDefinedRoutes
-				var $tempJson = $userDefinedRoutes[i].when.split('/');
+				var $tempJson = that.$parseStr($userDefinedRoutes[i].when , '/');
 				var flag = true;
 				if($urlAfterHash.length === $tempJson.length)
 				{
@@ -192,17 +204,11 @@ function LfRoute(){
 							break;
 						}
 					}
-					if(flag == true)
+					if(flag === true)
 						return $userDefinedRoutes[i];
 				}
 			}
 		}
-
-
-		this.$parseUrl = function($href){
-			return $href.split('#');
-		}
-
 
 		//returns redirectTO url of otherwise property in user defined route
 		this.$getOtherwisePath = function($userDefinedRoutes){
@@ -214,27 +220,27 @@ function LfRoute(){
 
 		
 		this.$loadView = function($container,$path){ 
-			that.$xhr = that.$getXhr();
-		    that.$xhr.onreadystatechange = function () {
-		        if (that.$xhr.readyState === 4 && that.$xhr.status == 200) {  
-		           $container.innerHTML = that.$xhr.responseText;
+			$xhr = that.$getXhr();
+		    $xhr.onreadystatechange = function () {
+		        if ($xhr.readyState === 4 && $xhr.status == 200) {  
+		           $container.innerHTML = $xhr.responseText;
 		        }
 		   	}
-		   that. $xhr.open('GET', $path, true);
-		    that.$xhr.send(null);
+		   $xhr.open('GET', $path, true);
+		   $xhr.send(null);
 		}
 
 
 		this.$getXhr = function(){
-			if(!that.$xhr){ 
+			if(!$xhr){ 
 				if (window.XMLHttpRequest) 
-		        	that.$xhr = new XMLHttpRequest(); 
+		        	$xhr = new XMLHttpRequest(); 
 			    else if (window.ActiveXObject) 
-			        that.$xhr = new ActiveXObject("Msxml2.XMLHTTP");
+			        $xhr = new ActiveXObject("Msxml2.XMLHTTP");
 			    else 
 			        throw new Error("Ajax is not supported by your browser");
 			}
-			return that.$xhr;
+			return $xhr;
 		}
 	} //end of class LFRoute
 
