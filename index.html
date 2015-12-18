@@ -5,12 +5,19 @@
 	<style type="text/css">
 		object {
 		  min-width: 100%;
-		  min-height: 101%; //not 100% but more than 101
+		  min-height: 101%; /*not 100% but more than 101 */
 		}
 		fieldset{
 			margin-bottom: 20px;
 		}
 
+		.name{
+			margin-top:10px;
+			color: red;
+		}
+		.address{
+			color: blue;
+		}
 	</style>
 </head>
 <body>
@@ -25,7 +32,6 @@
 			<p>
 			Model 2: <input type="text" lf-model="model2"> <br/>
 			Bind 2: <input type="text" lf-bind="model2"> <br/>
-
 		</fieldset>
 		<fieldset>
 			<legend>Routing Demo</legend>
@@ -35,17 +41,16 @@
 				<a href="#/user/123"> User id 123 </a> ||  
 				<a href="#/login"> Login </a> ||  
 				<a href="#/logout"> Logout </a> ||
-				<a href="#/jpt-link"> Jpt Link</a>(Rediects to /logout)
+				<a href="#/jptlink"> Jpt Link</a>(Rediects to /logout) 
 			</div>
 		</fieldset>
 
 		<fieldset>
 			<legend>Repeat Demo</legend>
-			<div lf-repeat="user" class="user">
-	
-				<div lf-bind="name"></div> 
-				<span lf-bind="address"></span> 
-				<a href="" lf-bind="link"></a>
+			<div lf-repeat="user" id="user">
+				<div lf-bind="name" class="name"></div> 
+				<div lf-bind="address" class="address"></div> 
+				<a href="{{link}}" lf-bind="link"></a>
 			</div>	
 		</fieldset>
 		<p>* Run this demo on Google Crome</p>
