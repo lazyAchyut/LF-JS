@@ -1,15 +1,15 @@
 ;(function(window, document, undefined) {
-
+'use strict'
 function Main(){
 	var $routeObj;
 	var $dataObj;
-	this.$scope;
+	var $scope = {};
 	this.$rootElement = [];
 	var that = this;
 
 	//TODO Move this dummy initialization to controller
-	this.$scope = {model1:'Kiran'};
-	this.$scope.user = [{
+	$scope = {model1:'Kiran'};
+	$scope.user = [{
 		name : 'Achyut Pokhrel',
 		address : 'Dang'
 	},
@@ -44,7 +44,11 @@ function Main(){
 	}
 
 	this.$updateScope = function(key,value){
-		that.$scope[key] = value;
+		$scope[key] = value;
+	}
+
+	this.getScope = function(){
+		return $scope;
 	}
 
 } //end of Main Class
@@ -84,42 +88,39 @@ function LfBind(){
 	this.$initializeFirstView = function(){
 		for(var i = 0, len = $watchModels.length; i < len; i++){
 			var $tag = $watchModels[i].getAttribute('lf-model'); 	
-			if($main.$scope.hasOwnProperty($tag))
+			if($main.getScope().hasOwnProperty($tag))
 				that.$updateView($tag);
 		}
 
 		for(var i = 0, len = $watchBinds.length; i < len; i++){
 			var $tag = $watchBinds[i].getAttribute('lf-bind'); 	
-			if($main.$scope.hasOwnProperty($tag))
+			if($main.getScope().hasOwnProperty($tag))
 				that.$updateView($tag);
 		}
 	}	
-
 
 	//search and update all bind and models of changed variable
 	this.$updateView = function($tag){
 	   	for(var j = 0, len = $watchModels.length; j < len; j++){
 			if($tag === $watchModels[j].getAttribute('lf-model')){
-				$watchModels[j].value = $main.$scope[$tag];
-				$watchModels[j].innerHTML = $main.$scope[$tag];
+				$watchModels[j].value = $main.getScope()[$tag];
+				$watchModels[j].innerHTML = $main.getScope()[$tag];
 			}
     	} 
 
     	for(var j = 0, len = $watchBinds.length; j < len; j++){
 			if($tag === $watchBinds[j].getAttribute('lf-bind')){
-				$watchBinds[j].value = $main.$scope[$tag];
-				$watchBinds[j].innerHTML = $main.$scope[$tag];
+				$watchBinds[j].value = $main.getScope()[$tag];
+				$watchBinds[j].innerHTML = $main.getScope()[$tag];
 			}
     	}   	
 	}
-
-
 } //end of LfBind
 
 
 
 //observe changes in $scope object, if any change is detected it updates respective models and bind
-Object.observe($main.$scope, function(changes){
+Object.observe($main.getScope(), function(changes){
     changes.forEach(function(change) {
     	// console.log(change.type, ' : ',change.name,' : ', change.oldValue);
     	$main.$invokeUpdateView(change.name);
@@ -128,77 +129,76 @@ Object.observe($main.$scope, function(changes){
 }); //end of object.observe
 
 
-
-
-
 //routing section
-
 function LfRoute(){
-	    var $actualRoute = {}; //holds route and templateUrl of matched route
-	    var $urlAfterHash;
-		var $userDefinedRoutes;
+		var $userDefinedRoutes = {};
+		var $allLinks = [];
 		var $xhr;
 		var that = this;
 
+		$userDefinedRoutes = $routeProvider(); //$routeProvider() returns user defined routes, lies in user's controller
+		$allLinks = $main.$rootElement.querySelectorAll('a');
+
 	    this.$addListener = function(){ 
-	    	//get all link and when click event is detected call $routeservice method
-			var $links = $main.$rootElement.querySelectorAll('a');
-			for(var i = 0, len = $links.length; i < len; i++){
-				$links[i].addEventListener('click',function(evt){
+	    	//get all link and when click event is detected call $doRoute method	
+			for(var i = 0, len = $allLinks.length; i < len; i++){
+				$allLinks[i].addEventListener('click',function(evt){
 					setTimeout(that.$doRoute, 0);
 				});
 			}
 	    }
 
 		this.$doRoute = function(){ 
-			var $href;
-			var $urlAfterHash;
-			var $actualRoute;
-			$href = document.URL
-			var $parsedUrl = that.$parseStr($href,'#');
-			var	$currentDir = $parsedUrl[0].substr(0,$parsedUrl[0].lastIndexOf('/')); //current directory
-			
-			$userDefinedRoutes = $routeProvider(); //$routeProvider() returns user defined routes, lies in user's controller
+			var $matchedRoute = []; //holds route and templateUrl of matched route
+	    	var $urlAfterHash = '';
+			var $currentUrl;
+			var $parsedUrl = [];
+			var	$currentDir;
+
+			$currentUrl = document.URL
+			$parsedUrl = that.$parseStr($currentUrl,'#');
+			$currentDir = $parsedUrl[0].substr(0,$parsedUrl[0].lastIndexOf('/')); //current directory	
 
 			if(($parsedUrl[1] != null && $parsedUrl[1] != '')){ 
-				$urlAfterHash = $parsedUrl[1]; 
-				$actualRoute = that.$parseUrlAfterHash($urlAfterHash , $userDefinedRoutes);
+				$urlAfterHash = $parsedUrl[1];
+				$matchedRoute = that.$mapUrlAfterHash($urlAfterHash);
 				var $container = document.querySelector('[lf-view]');
 				
-				if($actualRoute != null){
-					var $path =  $currentDir + $actualRoute.templateUrl.trim();
+				if($matchedRoute != null){
+					var $path =  $currentDir + $matchedRoute.templateUrl.trim();
 					that.$loadView($container, $path);
 				}
 				else{ 
 					var $redirectPath = that.$getOtherwisePath($userDefinedRoutes);
 					if($redirectPath != null ){
-						window.location.href = $parsedUrl[0] + '#' + $redirectPath;
-						$actualRoute = that.$parseUrlAfterHash($redirectPath,$userDefinedRoutes);
-						var $path =  $currentDir + $actualRoute.templateUrl.trim();
+						window.location.href = $parsedUrl[0] + '#' + $redirectPath;  //logout
+						$matchedRoute = that.$mapUrlAfterHash($redirectPath); 
+						var $path =  $currentDir + $matchedRoute.templateUrl.trim();
 						that.$loadView($container, $path);
 					}		
 				}	
 			}
 		}
 
-		this.$parseStr = function(str,delimiter){
-			return str.split(delimiter);
+		this.$parseStr = function(s,delimiter){ 
+			return s.split(delimiter);
 		}
 
 		//returns matched route's path and templateUrl
-		this.$parseUrlAfterHash = function($urlAfterHash,$userDefinedRoutes){
-			$urlAfterHash = that.$parseStr($urlAfterHash , '/');
+		this.$mapUrlAfterHash = function($path){ 
+			var tempParsedPath = [];
+			tempParsedPath = that.$parseStr($path , '/'); 
 			for(var i = 0; i< $userDefinedRoutes.length-1;i++){  //dont check otherwise part in $userDefinedRoutes
 				var $tempJson = that.$parseStr($userDefinedRoutes[i].when , '/');
 				var flag = true;
-				if($urlAfterHash.length === $tempJson.length)
+				if(tempParsedPath.length === $tempJson.length)
 				{
-					for(var j=0; j<$urlAfterHash.length;j++)
+					for(var j=0; j<tempParsedPath.length;j++)
 					{
-						if($urlAfterHash[j] === $tempJson[j])
+						if(tempParsedPath[j] === $tempJson[j])
 							continue;
 						else if($tempJson[j].substr(0,1)===':')
-							console.log("Assign " + $urlAfterHash[j] + " to " +  $tempJson[j] );
+							console.log("Assign " + tempParsedPath[j] + " to " +  $tempJson[j] );
 						else{
 							flag = false;
 							break;
@@ -211,7 +211,7 @@ function LfRoute(){
 		}
 
 		//returns redirectTO url of otherwise property in user defined route
-		this.$getOtherwisePath = function($userDefinedRoutes){
+		this.$getOtherwisePath = function(){
 			for(var i in $userDefinedRoutes){ 
 				if($userDefinedRoutes[i].otherwise == '')
 					return $userDefinedRoutes[i].redirectTo;
@@ -230,7 +230,6 @@ function LfRoute(){
 		   $xhr.send(null);
 		}
 
-
 		this.$getXhr = function(){
 			if(!$xhr){ 
 				if (window.XMLHttpRequest) 
@@ -246,7 +245,7 @@ function LfRoute(){
 
 
 //lf-repeate
-$repeatService = function(){
+var $repeatService = function(){
 	var $allRepeats = $rootElement.querySelectorAll('[lf-repeat]');
 	for(var i=0;i<$allRepeats.length;i++){ 
 		var $repeatAttribute = $allRepeats[i].getAttribute('lf-repeat'); 
