@@ -7,16 +7,46 @@
 		  min-width: 100%;
 		  min-height: 101%; /*not 100% but more than 101 */
 		}
+		.heading{
+			font-family: verdana;
+			color: orange;
+		}
 		fieldset{
 			margin-bottom: 20px;
 		}
+		.main{
+			background-color: #05657D
+		}
+
+		#user{
+			width: 500px;
+			height: 500px;
+			float: left;
+			background-color: #4A8912;
+			padding:20px; 
+			border: 5px solid #F1F1F1;
+			border-radius: 20px;
+			overflow: scroll;
+		}
 
 		.name{
-			margin-top:10px;
-			color: red;
+			color: #EEEBEB;
+			font-size: 1.4em;
+			font-family: verdana;
+			margin: 20px 0 5px 0;
+			border-top: 2px solid orange;
 		}
 		.address{
-			color: blue;
+			color: #ECEAEA;
+			font-size: 1.2em;
+			padding-bottom: 5px;
+		}
+		.img{
+			width: 100px;
+		}
+		a.links{
+			/*margin:-200px;*/
+			color: black;s
 		}
 	</style>
 </head>
@@ -45,12 +75,22 @@
 			</div>
 		</fieldset>
 
-		<fieldset>
+		<fieldset class="main">
 			<legend>Repeat Demo</legend>
 			<div lf-repeat="user" id="user">
+			<h1 class="heading">Leapfrog Trainee 2015</h1>
+				<div lf-bind="name" class="name"></div> 
+				<img src="{{img}}" lf-bind="img" class="img"/>
+				<div lf-bind="address" class="address"></div> 
+				<a href="{{link}}" lf-bind="link" class="links"></a>
+			</div>	
+		</fieldset>
+
+		<fieldset>
+			<legend>Controller Demo</legend>
+			<div lf-repeat="student">
 				<div lf-bind="name" class="name"></div> 
 				<div lf-bind="address" class="address"></div> 
-				<a href="{{link}}" lf-bind="link"></a>
 			</div>	
 		</fieldset>
 		<p>* Run this demo on Google Crome</p>
