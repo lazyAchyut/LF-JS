@@ -1,26 +1,30 @@
 ;(function(window, document, undefined) {
 'use strict';
 
+
 function Main(){
 	var $routeObj = null;
 	var $dataObj = null;
 	var $repeatObj = null;
+	var $dependency = null;
+
 	this.$scope = {};
 	this.$rootElement = [];
 	this.$routeParam = [];
+	this.$rootElement;
 	var that = this;
 
-	this.$rootElement = document.querySelector('[lf-app]');
 
 	this.$initializeRoute = function(){
 		$routeObj = new LfRoute();
-		$routeObj.$addListener();
 		$routeObj.$doRoute();
+		$routeObj.$addListener();
 	}
 
 	this.$initializeDataBind = function(){
 		$dataObj = new LfBind();
 		$dataObj.$registerWatcher();
+		$dataObj.$observeObject();
 		$dataObj.$addListener();
 		$dataObj.$initializeFirstView();
 	}	
@@ -31,78 +35,115 @@ function Main(){
 		$repeatObj.$doRepeat();
 		$repeatObj.$doDetail();
 		//after lf-repeate, new links may be added
-		if($routeObj != null)
+		if($routeObj)
 			$routeObj.$addListener();
 	}
 
-	//invoke updateview method inside LfData class from Object.Observe section 
-	this.$invokeUpdateView = function(tag){
-		$dataObj.$updateView(tag);
+	this.$initializeDependency = function(){
+		$dependency = new DependencyInjection();
+		// $dependency.$register('$scope',  $main.$scope);
+		$dependency.$invokeController();
 	}
 
-	this.$updateSerivces = function(){
-		// TODO required services to be invoked
+
+	this.$updateSerivces = function(){ 
+		that.$scope = {};
+		$dependency.$invokeController();
+
+		setTimeout($repeatObj.$initRepeat,0);
+		setTimeout($repeatObj.$doRepeat,0);
+		setTimeout($repeatObj.$doDetail,0);
+
+		// if($routeObj)
+		// 	$routeObj.$addListener();
+
+		$dataObj.$registerWatcher();
+		$dataObj.$addListener();
+		$dataObj.$initializeFirstView();
+
+		console.log(that.$scope);
 	}
 
 	this.$bootstrap = function(){
-		// TODO initially call all the services form here
+		that.$rootElement = document.querySelector('[lf-app]');
+		
+		if(that.$rootElement === null) 
+			return;
+
+		if(typeof $routeProvider === "function")	//invoke only if routing is defined by user in myapp.js
+			$main.$initializeRoute();
+
+		setTimeout($main.$initializeDependency,0);
+		setTimeout($main.$initializeRepeat,30);
+		setTimeout($main.$initializeDataBind,0);
+
+		window.addEventListener("hashchange", that.$invokeRoute, false); 
+
+	}
+
+	this.$invokeRoute = function(){
+		if($routeObj){
+			$routeObj.$doRoute();
+		}
 	}
 } //end of Main Class
 
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
-var $main = new Main();
 
-var Injector = {
-    
-    dependencies: {},
-    
-    process: function(target) {
+var $main = new Main();
+$main.$bootstrap();
+
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+function DependencyInjection(){
+    var $dependencies = {};
+    var that = this;
+
+    this.$process = function(target){
         var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
         var FN_ARG_SPLIT = /,/;
         var FN_ARG = /^\s*(_?)(\S+?)\1\s*$/;
         var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
         var text = target.toString();
-        var args = text.match(FN_ARGS)[1].split(',');
-        
-        target.apply(target, this.getDependencies(args));
-    },
-    
-    getDependencies: function(arr) {
-        var self = this;
-        return arr.map(function(value) {
-            
-            return self.dependencies[value];
-        });            
-    },
-    
-    register: function(name, dependency) {
-        this.dependencies[name] = dependency;
+        var args = text.match(FN_ARGS)[1].split(','); 
+
+        target.apply(target, that.$getDependencies(args));
     }
-};
 
-//register all the possible injectors
-Injector.register('$scope',  $main.$scope);
+    this.$getDependencies = function(arr){ 
+        return arr.map(function(value) {
+            return $dependencies[value];
+        });  
+    }
+
+    this.$register = function(name , dependency){
+        $dependencies[name] = dependency;
+    }
+
+    this.$getControllers = function(){ 
+    	return $main.$rootElement.querySelectorAll('[lf-controller]');
+    }
+
+    this.$invokeController = function(){ 
+    	var $controllers = that.$getControllers(); 
+    	for(var i=0;i<$controllers.length;i++){ 
+    		var $controllerName = $controllers[i].getAttribute('lf-controller').trim();
+    		$main.$scope[$controllerName] = {};
+    		that.$register('$scope',  $main.$scope[$controllerName]);
+    		that.$process(eval($controllerName));
+
+    	}
+
+    }
+}
 
 
-//create instance of Main class
-if(typeof $routeProvider === "function")	//invoke only if routing is defined by user in myapp.js
-	$main.$initializeRoute();
-
-// TODO process the user defined controller
-Injector.process(MyController);
-
-
-setTimeout($main.$initializeRepeat,0);
-setTimeout($main.$initializeDataBind,0);
 
 
 
-
-
-///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -116,11 +157,22 @@ function LfBind(){
 		// TODO gets all models and bind
 		//and compare it with previous one (i.e first with length and then from key)
 		//if changes is found then add it to $watcher list and invoke $addlistner
+
 	}
 
-	this.$registerWatcher = function(){
+	this.$registerWatcher = function(){ 	
 		$watchModels = $main.$rootElement.querySelectorAll('[lf-model]'); 
 		$watchBinds = $main.$rootElement.querySelectorAll('[lf-bind]');
+	}
+
+	this.$observeObject = function(){
+		//observe changes in $scope object, if any change is detected it updates respective models and bind
+		Object.observe($main.$scope, function(changes){
+		    changes.forEach(function(change) {
+		    	// console.log(change.type, ' : ',change.name,' : ', change.oldValue);
+		    	that.$updateView(change.name);
+		   	 }); //end of change.foreach
+		}); //end of object.observe
 	}
 
 	this.$addListener = function(){ 
@@ -137,17 +189,19 @@ function LfBind(){
 	}
 	
 	//updates the model and binds with data if initially present in scope object
-	this.$initializeFirstView = function(){
+	this.$initializeFirstView = function(){ 	
 		for(var i = 0, len = $watchModels.length; i < len; i++){
 			var $tag = $watchModels[i].getAttribute('lf-model'); 	
 			if($main.$scope.hasOwnProperty($tag))
-				that.$updateView($tag);
+				$watchModels[i].value = $main.$scope[$tag];
+				$watchModels[i].innerHTML = $main.$scope[$tag];
 		}
 
 		for(var i = 0, len = $watchBinds.length; i < len; i++){
 			var $tag = $watchBinds[i].getAttribute('lf-bind'); 	
 			if($main.$scope.hasOwnProperty($tag))
-				that.$updateView($tag);
+				$watchBinds[i].value = $main.$scope[$tag];
+				$watchBinds[i].innerHTML = $main.$scope[$tag];
 		}
 	}	
 
@@ -171,13 +225,14 @@ function LfBind(){
 
 
 
-//observe changes in $scope object, if any change is detected it updates respective models and bind
-Object.observe($main.$scope, function(changes){
-    changes.forEach(function(change) {
-    	// console.log(change.type, ' : ',change.name,' : ', change.oldValue);
-    	$main.$invokeUpdateView(change.name);
-   	 }); //end of change.foreach
-}); //end of object.observe
+// //observe changes in $scope object, if any change is detected it updates respective models and bind
+// Object.observe($main.$scope, function(changes){
+//     changes.forEach(function(change) {
+//     	// console.log(change.type, ' : ',change.name,' : ', change.oldValue);
+//     	$main.$invokeUpdateView(change.name);
+//    	 }); //end of change.foreach
+// }); //end of object.observe
+
 
 
 //routing section
@@ -196,10 +251,11 @@ function LfRoute(){
 		//get all link and when click event is detected call $doRoute method	
 	    this.$addListener = function(){ 
 	    	//after rendering first view, lf-repeate might rendor some dynamic links later so, it needs to be rechecked again and again	
-	    	$allLinks = $main.$rootElement.querySelectorAll('a');
+	    	$allLinks = $main.$rootElement.querySelectorAll('a'); 
 			for(var i = 0, len = $allLinks.length; i < len; i++){
-				$allLinks[i].addEventListener('click',function(evt){
+				$allLinks[i].addEventListener('click',function(evt){ 
 					setTimeout(that.$doRoute, 0);
+					setTimeout($main.$updateSerivces,10);
 				});
 			}
 	    }
@@ -243,11 +299,13 @@ function LfRoute(){
 		//returns matched route's path and templateUrl
 		this.$mapUrlAfterHash = function($path){ 
 			var $tempParsedPath = [];
-			$tempParsedPath = that.$parseStr($path , '/'); 
+			$tempParsedPath = that.$parseStr($path , '/');  
+			$tempParsedPath = $tempParsedPath.filter(Boolean); 
 			for(var i = 0; i< $USER_DEFINED_ROUTES.length-1;i++){  //dont check otherwise part in $USER_DEFINED_ROUTES
-				var $tempJson = that.$parseStr($USER_DEFINED_ROUTES[i].when , '/');
+				var $tempJson = that.$parseStr($USER_DEFINED_ROUTES[i].when , '/');  
+				$tempJson = $tempJson.filter(Boolean); 
 				var flag = true;
-				if($tempParsedPath.length === $tempJson.length)
+				if($tempParsedPath.length == $tempJson.length)
 				{
 					for(var j=0; j<$tempParsedPath.length;j++)
 					{
@@ -284,7 +342,7 @@ function LfRoute(){
 		           $container.innerHTML = $xhr.responseText;
 		        }
 		   	}
-		   $xhr.open('GET', $path, true);
+		   $xhr.open('GET', $path, false);
 		   $xhr.send(null);
 		}
 
@@ -307,6 +365,8 @@ function LfRepeat(){
 	var $allRepeats;
 	var $allDetails;
 	var $collectionName; //scope property
+	var $controllerName;
+	var $tempScope;
 	var that = this;
 
 	this.$initRepeat = function(){
@@ -327,14 +387,18 @@ function LfRepeat(){
 		for(var i = 0; i<$allRepeats.length;i++){
 			$currentRepeat = $allRepeats[i];
 			$collectionName = ($currentRepeat.getAttribute('lf-repeat')).trim();
+			$controllerName = ($currentRepeat.getAttribute('lf-controller')).trim();
 			
-			if($main.$scope.hasOwnProperty($collectionName)){
+			//get scope and append controller name here
+			$tempScope = $main.$scope[$controllerName];
+
+			if($tempScope.hasOwnProperty($collectionName)){
 				$innerBinds = $currentRepeat.querySelectorAll('[lf-bind]');
 				that.$removeElements($currentRepeat,$innerBinds);
-				for(var j=0;j<$main.$scope[$collectionName].length;j++){
+				for(var j=0;j<$tempScope[$collectionName].length;j++){
 					for(var noOfBinds=0;noOfBinds<$innerBinds.length;noOfBinds++){
 						$bindAttr = ($innerBinds[noOfBinds].getAttribute('lf-bind')).trim();
-						if($main.$scope[$collectionName][j].hasOwnProperty($bindAttr))
+						if($tempScope[$collectionName][j].hasOwnProperty($bindAttr))
 							that.$renderRepeat($currentRepeat , $innerBinds[noOfBinds] , j , $bindAttr);
 					}
 				}
@@ -348,28 +412,37 @@ function LfRepeat(){
 		var $attributes;
 		var $bindAttr;
 		var $index;
+		var $key;
 		for(var i=0;i<$allDetails.length;i++){
 			$currentDetail = $allDetails[i];
 			$attributes = ($currentDetail.getAttribute('lf-detail')).split('of');
 			$collectionName = $attributes[0].trim();
-			var $key = $attributes[1].trim();
+			$controllerName = ($currentDetail.getAttribute('lf-controller')).trim();
+			$tempScope = $main.$scope[$controllerName];
+
+			$key = $attributes[1].trim();
 			$index = $main.$routeParam[$key];
 
-			if($main.$scope.hasOwnProperty($collectionName)){
-				$innerBinds = $currentDetail.querySelectorAll('[lf-bind]');
-				that.$removeElements($currentDetail,$innerBinds);
+			if($tempScope.hasOwnProperty($collectionName)){
+				for(var i=0;i<$tempScope[$collectionName].length;i++){
+					if($tempScope[$collectionName][i].roll == $index){
+						$innerBinds = $currentDetail.querySelectorAll('[lf-bind]');
+						that.$removeElements($currentDetail,$innerBinds);
 
-				for(var noOfBinds=0;noOfBinds<$innerBinds.length;noOfBinds++){
-					$bindAttr = ($innerBinds[noOfBinds].getAttribute('lf-bind')).trim();
-					if($main.$scope[$collectionName][$index].hasOwnProperty($bindAttr)){
-						console.log($main.$scope[$collectionName][$index]);
-						that.$renderRepeat($currentDetail , $innerBinds[noOfBinds] , $index , $bindAttr);
+						for(var noOfBinds=0;noOfBinds<$innerBinds.length;noOfBinds++){
+							$bindAttr = ($innerBinds[noOfBinds].getAttribute('lf-bind')).trim();
+							if($tempScope[$collectionName][i].hasOwnProperty($bindAttr)){
+								that.$renderRepeat($currentDetail , $innerBinds[noOfBinds] , i , $bindAttr);
+							}
+						}
 					}
 				}
+			
 			}
 
 		}
 	}
+
 
 	this.$removeElements = function(parent,child){
 		for(var i=0;i<child.length;i++)
@@ -379,9 +452,9 @@ function LfRepeat(){
 	this.$renderRepeat = function(parentNode,childNode,index,key){
 		childNode = childNode.cloneNode();
 		childNode.removeAttribute('lf-bind');
-		childNode.innerHTML = $main.$scope[$collectionName][index][key];
+		childNode.innerHTML = $tempScope[$collectionName][index][key];
 		parentNode.appendChild(childNode);
-		parentNode.innerHTML = parentNode.innerHTML.replace('{{'+key+'}}',$main.$scope[$collectionName][index][key]);
+		parentNode.innerHTML = parentNode.innerHTML.replace('{{'+key+'}}',$tempScope[$collectionName][index][key]);
 	}
 	
 } //end of class LfRepeat
@@ -403,7 +476,6 @@ function LfRepeat(){
 	// 	$bootstrap();
 	// 	$repeatService();
 	// }, 100 );	
-
 
 
 })(window, document);
