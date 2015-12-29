@@ -1,8 +1,10 @@
-# try
-## Custom Simplified Angular JS library
+# LF-JS
+## Simplified Angular JS library
 
-> Features to include:
-* Two way data binding   : <a href="http://lazyachyut.github.io/try/" target="_blank"> Demo </a>
+> Features:
+* Two way data binding  
 * Routing page
+* Repeat directives
 
-(Currently Working)
+Demo <a href="http://lazyachyut.github.io/LF-JS/" target="_blank"> Demo </a>
+
