@@ -1,45 +1,40 @@
-
-function MyController($scope){
-	$scope.user = [{
-		name : 'Achyut Pokhrel',
-		address : 'Dang',
-		link : 'http://localhost/myfiles/prototype/#/user/0',
-		img : 'images/1.png'
-	},
-	{
-		name : 'Kiran Kharel',
-		address : 'Jhapa',
-		link : 'http://localhost/myfiles/prototype/#/user/1',
-		img : 'images/2.png'
-	},
-	{
-		name : 'Gaurab KC',
-		address : 'Kathmandu',
-		link : 'http://localhost/myfiles/prototype/#/user/2',
-		img : 'images/3.png'
-	}
-	]; 
+function TraineeController($scope){ 
+	var req = new XMLHttpRequest();
+    // req.open( "GET", "https://raw.githubusercontent.com/lazyAchyut/LF-JS/master/js/trainee.js", true);
+    req.open( "GET", "js/trainee.js", true);
+ 
+    req.onreadystatechange = function()
+    {	
+        if( req.readyState == 4 && req.status == 200 )
+        { 
+            $scope.trainee = JSON.parse( req.responseText );  
+            $scope.trainee.sort(function(a, b) {
+			    return (a.roll - b.roll);
+			});
+        }
+    }
+    req.send(null);
 }
 
 
 //this is user defined routing
-function $routeProvider(){
-	return [{
-			when : '/login',
-			templateUrl : '/partial/login.html'
+function RouteProvider($route){ 
+	$route.$userDefinedRoutes = [
+		{
+			when : '/error',
+			templateUrl : '/partial/error-page.html'
 		},
 		{
-			when : '/logout',
-			templateUrl : '/partial/logout.html'
+			when : '/user/:roll',
+			templateUrl : '/partial/trainee-details.html'
 		},
 		{
-			when : '/user/:id',
-			templateUrl : '/partial/user.html'
+			when : '/data-bind',
+			templateUrl : '/partial/data-bind.html'
 		},
 		{
 			otherwise : '', 
-			redirectTo : '/logout'
+			redirectTo : '/error'
 		}
 	];
 }
-

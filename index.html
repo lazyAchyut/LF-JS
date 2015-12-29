@@ -1,102 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title></title>
-	<style type="text/css">
-		object {
-		  min-width: 100%;
-		  min-height: 101%; /*not 100% but more than 101 */
-		}
-		.heading{
-			font-family: verdana;
-			color: orange;
-		}
-		fieldset{
-			margin-bottom: 20px;
-		}
-		.main{
-			background-color: #05657D
-		}
-
-		#user{
-			width: 500px;
-			height: 500px;
-			float: left;
-			background-color: #4A8912;
-			padding:20px; 
-			border: 5px solid #F1F1F1;
-			border-radius: 20px;
-			overflow: scroll;
-		}
-
-		.name{
-			color: #EEEBEB;
-			font-size: 1.4em;
-			font-family: verdana;
-			margin: 20px 0 5px 0;
-			border-top: 2px solid orange;
-		}
-		.address{
-			color: #ECEAEA;
-			font-size: 1.2em;
-			padding-bottom: 5px;
-		}
-		.img{
-			width: 100px;
-		}
-		a.links{
-			/*margin:-200px;*/
-			color: black;s
-		}
-	</style>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Leapfrog Training 2015</title>
+	<link rel="stylesheet" type="text/css" href="css/reset.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
-<div lf-app="">
-		<h1>Custom AngularJs (LF-JS) Prototype</h1>
-		<fieldset>
-			<legend>Two Data Binding Demo</legend>
-			Model 1: <input type="text" lf-model="model1"> <br/>
-			Mode 1: <input type="text" lf-model="model1"> <br/>
-			Bind 1 :  <input type="text" lf-bind="model1"> <br/>
-			Bind 1:  <label lf-bind="model1"></label><br/>
-			<p>
-			Model 2: <input type="text" lf-model="model2"> <br/>
-			Bind 2: <input type="text" lf-bind="model2"> <br/>
-		</fieldset>
-		<fieldset>
-			<legend>Routing Demo</legend>
-			<h5 align="center">This is lf-view</h5>
-			<div lf-view style="border:2px solid orange; width:400px; margin: 0 auto; background: #def;"> </div>
-			<div style="text-align: center">
-				<a href="#/user/123"> User id 123 </a> ||  
-				<a href="#/login"> Login </a> ||  
-				<a href="#/logout"> Logout </a> ||
-				<a href="#/jptlink"> Jpt Link</a>(Rediects to /logout) 
+	<div class="body-wrp">
+		<div class="header clearfix">
+			<div class="heading">
+				<h1><a href="index.html">Leapfrog Training 2015</a></h1>
 			</div>
-		</fieldset>
+			<div class="logo-wrp"> <img src="images/logo-1.png"></div>
+		</div>		
+	
+		<div lf-app="" class="main-container"> 
+			<div class="content-holder clearfix">
+				<div class="list">
+					
+					<div lf-repeat="trainee" lf-controller="TraineeController" class="trainees">
+						<h2 class="display">List Of Trainees</h2>
+						<a href="#/user/{{roll}}" lf-bind="roll" class="links"></a>
+						<img src="images/{{roll}}.png" lf-bind="roll" class="img"/>
+					</div>
+						
+				</div>
+				<div lf-view="" class="view"></div>
+			</div>
+		</div>
 
-		<fieldset class="main">
-			<legend>Repeat Demo</legend>
-			<div lf-repeat="user" id="user">
-			<h1 class="heading">Leapfrog Trainee 2015</h1>
-				<div lf-bind="name" class="name"></div> 
-				<img src="{{img}}" lf-bind="img" class="img"/>
-				<div lf-bind="address" class="address"></div> 
-				<a href="{{link}}" lf-bind="link" class="links"></a>
-			</div>	
-		</fieldset>
-
-		<fieldset>
-			<legend>Controller Demo</legend>
-			<div lf-repeat="student">
-				<div lf-bind="name" class="name"></div> 
-				<div lf-bind="address" class="address"></div> 
-			</div>	
-		</fieldset>
-		<p>* Run this demo on Google Crome</p>
-		</div> <!-- end of lf-app -->
-
+		<div class="footer">
+			<div class="links">
+				<a href="#/error-links">Error Link</a> ||	
+				<a href="#/data-bind">Data Bind</a>
+			</div>		
+		</div>	
+	</div>
 <script type="text/javascript" src="js/myApp.js"></script>
-<script type="text/javascript" src="js/lfLibrary.js"></script>
+<script type="text/javascript" src="js/lfLibrary_v1.js"></script>
+
 </body>
 </html>
