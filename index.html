@@ -1,62 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title></title>
-	<style type="text/css">
-		object {
-		  min-width: 100%;
-		  min-height: 101%; /*not 100% but more than 101 */
-		}
-		fieldset{
-			margin-bottom: 20px;
-		}
-
-		.name{
-			margin-top:10px;
-			color: red;
-		}
-		.address{
-			color: blue;
-		}
-	</style>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Leapfrog Training 2015</title>
+	<link rel="stylesheet" type="text/css" href="css/reset.css">
+	<link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
-<div lf-app="">
-		<h1>Custom AngularJs (LF-JS) Prototype</h1>
-		<fieldset>
-			<legend>Two Data Binding Demo</legend>
-			Model 1: <input type="text" lf-model="model1"> <br/>
-			Mode 1: <input type="text" lf-model="model1"> <br/>
-			Bind 1 :  <input type="text" lf-bind="model1"> <br/>
-			Bind 1:  <label lf-bind="model1"></label><br/>
-			<p>
-			Model 2: <input type="text" lf-model="model2"> <br/>
-			Bind 2: <input type="text" lf-bind="model2"> <br/>
-		</fieldset>
-		<fieldset>
-			<legend>Routing Demo</legend>
-			<h5 align="center">This is lf-view</h5>
-			<div lf-view style="border:2px solid orange; width:400px; margin: 0 auto; background: #def;"> </div>
-			<div style="text-align: center">
-				<a href="#/user/123"> User id 123 </a> ||  
-				<a href="#/login"> Login </a> ||  
-				<a href="#/logout"> Logout </a> ||
-				<a href="#/jptlink"> Jpt Link</a>(Rediects to /logout) 
+	<div class="body-wrp">
+		<div class="header clearfix">
+			<div class="heading">
+				<h1><a href="index.html">Leapfrog Training 2015</a></h1>
 			</div>
-		</fieldset>
+			<div class="logo-wrp"> <img src="images/logo-1.png"></div>
+		</div>		
+	
+		<div lf-app="" class="main-container"> 
+			<div class="content-holder clearfix">
+				<div class="list">
+					
+					<div lf-repeat="trainee" lf-controller="TraineeController" class="trainees">
+						<h2 class="display">List Of Trainees</h2>
+						<a href="#/user/{{roll}}" lf-bind="roll" class="links"></a>
+						<img src="images/{{roll}}.png" lf-bind="roll" class="img"/>
+					</div>
+						
+				</div>
+				<div lf-view="" class="view"></div>
+			</div>
+		</div>
 
-		<fieldset>
-			<legend>Repeat Demo</legend>
-			<div lf-repeat="user" id="user">
-				<div lf-bind="name" class="name"></div> 
-				<div lf-bind="address" class="address"></div> 
-				<a href="{{link}}" lf-bind="link"></a>
-			</div>	
-		</fieldset>
-		<p>* Run this demo on Google Crome</p>
-		</div> <!-- end of lf-app -->
-
+		<div class="footer">
+			<div class="links">
+				<a href="#/error-links">Error Link</a> ||	
+				<a href="#/data-bind">Data Bind</a>
+			</div>		
+		</div>	
+	</div>
 <script type="text/javascript" src="js/myApp.js"></script>
-<script type="text/javascript" src="js/lfLibrary.js"></script>
+<script type="text/javascript" src="js/lfLibrary_v1.js"></script>
+
 </body>
 </html>
