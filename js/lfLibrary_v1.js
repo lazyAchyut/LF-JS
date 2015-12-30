@@ -1,5 +1,5 @@
 ;(function(window, document, undefined) {
-'use strict';
+  'use strict';
 
 //Main controller class to handle all execution
 function Main(){
@@ -39,6 +39,7 @@ function Main(){
       return;
     }
 
+    //instatiation of objects
     $dependency = new DependencyInjection();
     $dataObj = new LfBind();
     $repeatObj = new LfRepeat();
@@ -48,22 +49,20 @@ function Main(){
       $routeObj = new LfRoute();    
       $dependency.$registerDependency('$route' , $routeObj);  //set LfRoute's object as dependency for $route as parameter 
       $dependency.$processMethods(RouteProvider);             //process and invoke RouteProvider function
-      $routeObj.$doRoute();                                   //get current URL and render the proper view
+      $routeObj.$doRoute(that.$initializeDataBind);                                   //get current URL and render the proper view
     }
 
     $dependency.$invokeUserControllers();  //invoke only those controllers that are used in current view
     setTimeout(that.$initializeRepeat,10); //since $invokeUserControllers is asynchronous [Bad Practice using setTimeOut eventhough]
-    that.$initializeDataBind();
-    window.addEventListener('hashchange', that.$updateSerivces, false); //update the view if url is changed
+    window.addEventListener('hashchange' , that.$updateSerivces , false); //update the view if url is changed
   }
 
   this.$updateSerivces = function(){ 
     if($routeObj){        //update only if user has defined routes
-      $routeObj.$doRoute();
+      $routeObj.$doRoute(that.$initializeDataBind);
       that.$scope = {};   //flush $scope when view is changed
       $dependency.$invokeUserControllers();
       setTimeout(that.$initializeRepeat,10);
-      that.$initializeDataBind();
     }
   }
 } //end of Main Class
@@ -77,24 +76,24 @@ function DependencyInjection(){
   var that = this;
 
   this.$processMethods = function($target){ 
-      var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
-      var FN_ARG_SPLIT = /,/;
-      var FN_ARG = /^\s*(_?)(\S+?)\1\s*$/;
-      var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-      var $text = $target.toString();
-      var $args = $text.match(FN_ARGS)[1].split(','); 
+    var FN_ARGS = /^function\s*[^\(]*\(\s*([^\)]*)\)/m;
+    var FN_ARG_SPLIT = /,/;
+    var FN_ARG = /^\s*(_?)(\S+?)\1\s*$/;
+    var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+    var $text = $target.toString();
+    var $args = $text.match(FN_ARGS)[1].split(','); 
 
-      $target.apply($target, that.$getDependencies($args));
+    $target.apply($target, that.$getDependencies($args));
   }
 
   this.$getDependencies = function($arr){ 
-      return $arr.map(function(value) {
-          return $dependencies[value];
-      });  
+    return $arr.map(function(value) {
+      return $dependencies[value];
+    });  
   }
 
   this.$registerDependency = function($name , $dependency){
-      $dependencies[$name] = $dependency;
+    $dependencies[$name] = $dependency;
   }
 
   this.$getControllers = function(){ 
@@ -132,7 +131,7 @@ function LfBind(){
     Object.observe($main.$scope, function(changes){
       changes.forEach(function(change) {
         that.$updateView(change.name);
-       });
+      });
     });
   }
 
@@ -197,7 +196,7 @@ function LfRoute(){
     var $xhr;                         //XMLHttpRequest object
     var that = this;
 
-    this.$doRoute = function(){ 
+    this.$doRoute = function($callback){ 
       var $matchedRoute = []; //holds route and templateUrl of matched route
       var $urlAfterHash = ''; //portion of url after '#'
       var $currentUrl;      
@@ -217,7 +216,7 @@ function LfRoute(){
         
         if($matchedRoute != null){
           $path = $currentDir + $matchedRoute.templateUrl.trim(); //templateUrl is name of partial file
-          that.$loadView($container , $path);
+          that.$loadView($container , $path , $callback);
         }
         else{ 
           $redirectPath = that.$getOtherwisePath(that.$userDefinedRoutes);
@@ -225,7 +224,7 @@ function LfRoute(){
             window.location.href = $parsedUrl[0] + '#' + $redirectPath;  //set url to redirected url
             $matchedRoute = that.$mapUrlAfterHash($redirectPath); 
             $path =  $currentDir + $matchedRoute.templateUrl.trim();
-            that.$loadView($container , $path);
+            that.$loadView($container , $path , $callback);
           }   
         } 
       }
@@ -238,7 +237,7 @@ function LfRoute(){
     //returns matched route's path and templateUrl
     this.$mapUrlAfterHash = function($urlAfterHash){
       var $tempParsedPath = []; //parsed current url component by  delimiter '/'
-      var $tempJson = {}; //holds single json object from userdefined json array
+      var $tempJson = {}; //holds each single json object from userdefined json array
       var $flag  = true;    //boolean to determine url matches or not
 
       $tempParsedPath = that.$parseStr($urlAfterHash , '/');  
@@ -275,26 +274,27 @@ function LfRoute(){
     }
     
     //render $container(lf-view) with content from $path    
-    this.$loadView = function($container,$path){ 
+    this.$loadView = function($container,$path,$callback){ 
       $xhr = that.$getXhr();
-        $xhr.onreadystatechange = function () {
-          if ($xhr.readyState === 4 && $xhr.status == 200) {  
-             $container.innerHTML = $xhr.responseText;
-          }
-        }
-       $xhr.open('GET' , $path , false);
-       $xhr.send(null);
-    }
+      $xhr.onreadystatechange = function () {
+        if ($xhr.readyState === 4 && $xhr.status == 200) {  
+         $container.innerHTML = $xhr.responseText;
+         $callback();
+       }
+     }
+     $xhr.open('GET' , $path , true);
+     $xhr.send(null);
+   }
 
     //singleton $xhr object
     this.$getXhr = function(){
       if(!$xhr){ 
         if (window.XMLHttpRequest) 
-            $xhr = new XMLHttpRequest(); 
-          else if (window.ActiveXObject) 
-            $xhr = new ActiveXObject('Msxml2.XMLHTTP');
-          else 
-            throw new Error('Ajax is not supported by your browser');
+          $xhr = new XMLHttpRequest(); 
+        else if (window.ActiveXObject) 
+          $xhr = new ActiveXObject('Msxml2.XMLHTTP');
+        else 
+          throw new Error('Ajax is not supported by your browser');
       }
       return $xhr;
     }
@@ -357,11 +357,11 @@ function LfRepeat(){
       $currentDetail = $allDetails[i];
       $attributes = ($currentDetail.getAttribute('lf-detail')).split('of');
       $collectionName = $attributes[0].trim();
+      $key = $attributes[1].trim();     //key is property 
+      $index = $main.$routeParam[$key]; //specific key that is provided by user
+
       $controllerName = ($currentDetail.getAttribute('lf-controller')).trim();
       $tempScope = $main.$scope[$controllerName];
-
-      $key = $attributes[1].trim();
-      $index = $main.$routeParam[$key];
 
       if($tempScope.hasOwnProperty($collectionName)){
         for(var i=0;i<$tempScope[$collectionName].length;i++){
@@ -381,19 +381,18 @@ function LfRepeat(){
     }
   }
 
-
-  this.$removeElements = function(parent,child){
-    for(var i=0;i<child.length;i++){
-      parent.removeChild(child[i]);
+  this.$removeElements = function($parent , $child){
+    for(var i=0;i<$child.length;i++){
+      $parent.removeChild($child[i]);
     }
   }
 
-  this.$renderRepeat = function(parentNode,childNode,index,key){
-    childNode = childNode.cloneNode();
-    childNode.removeAttribute('lf-bind');
-    childNode.innerHTML = $tempScope[$collectionName][index][key];
-    parentNode.appendChild(childNode);
-    parentNode.innerHTML = parentNode.innerHTML.replace('{{'+key+'}}',$tempScope[$collectionName][index][key]);
+  this.$renderRepeat = function($parentNode , $childNode , $index , $key){
+    $childNode = $childNode.cloneNode();
+    $childNode.removeAttribute('lf-bind');
+    $childNode.innerHTML = $tempScope[$collectionName][$index][$key];
+    $parentNode.appendChild($childNode);
+    $parentNode.innerHTML = $parentNode.innerHTML.replace('{{' + $key + '}}' , $tempScope[$collectionName][$index][$key]);
   }
   
 } //end of class LfRepeat
@@ -402,8 +401,8 @@ function LfRepeat(){
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-  var $main = new Main();
-  $main.$bootstrap();
+var $main = new Main();
+$main.$bootstrap();
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
