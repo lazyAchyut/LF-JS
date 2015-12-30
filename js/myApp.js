@@ -1,7 +1,7 @@
 function TraineeController($scope){ 
 	var req = new XMLHttpRequest();
-    req.open( "GET", "https://raw.githubusercontent.com/lazyAchyut/LF-JS/master/js/trainee.js", true);
-    // req.open( "GET", "js/trainee.js", true);
+    // req.open( "GET", "https://raw.githubusercontent.com/lazyAchyut/LF-JS/master/js/trainee.js", true);
+    req.open( "GET", "js/trainee.js", true);
  
     req.onreadystatechange = function()
     {	
@@ -25,7 +25,7 @@ function RouteProvider($route){
 			templateUrl : '/partial/error-page.html'
 		},
 		{
-			when : '/user/:roll',
+			when : '/user/:name',
 			templateUrl : '/partial/trainee-details.html'
 		},
 		{

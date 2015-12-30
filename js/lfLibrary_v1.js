@@ -49,7 +49,7 @@ function Main(){
       $routeObj = new LfRoute();    
       $dependency.$registerDependency('$route' , $routeObj);  //set LfRoute's object as dependency for $route as parameter 
       $dependency.$processMethods(RouteProvider);             //process and invoke RouteProvider function
-      $routeObj.$doRoute(that.$initializeDataBind);                                   //get current URL and render the proper view
+      $routeObj.$doRoute(that.$initializeDataBind);           //get current URL and render the proper view
     }
 
     $dependency.$invokeUserControllers();  //invoke only those controllers that are used in current view
@@ -363,15 +363,19 @@ function LfRepeat(){
       $controllerName = ($currentDetail.getAttribute('lf-controller')).trim();
       $tempScope = $main.$scope[$controllerName];
 
-      if($tempScope.hasOwnProperty($collectionName)){
+// console.log($tempScope[$collectionName][9][$key]);
+// console.log($tempScope.$collectionName[4].name);
+      
+
+      if($tempScope.hasOwnProperty($collectionName)){ 
         for(var i=0;i<$tempScope[$collectionName].length;i++){
-          if($tempScope[$collectionName][i].roll == $index){
+          if($tempScope[$collectionName][i][$key] == $index){
             $innerBinds = $currentDetail.querySelectorAll('[lf-bind]');
             that.$removeElements($currentDetail,$innerBinds);
 
             for(var noOfBinds=0;noOfBinds<$innerBinds.length;noOfBinds++){
               $bindAttr = ($innerBinds[noOfBinds].getAttribute('lf-bind')).trim();
-              if($tempScope[$collectionName][i].hasOwnProperty($bindAttr)){
+              if($tempScope[$collectionName][i].hasOwnProperty($bindAttr)){ 
                 that.$renderRepeat($currentDetail , $innerBinds[noOfBinds] , i , $bindAttr);
               }
             }

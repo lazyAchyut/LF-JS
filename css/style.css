@@ -181,6 +181,12 @@
 	margin: 20px 0px;
 }
 
+.bind-name{
+	color:#343434;
+	font-size: 0.9em;
+	padding-left: 12px;
+}
+
 /*clear fix*/
 .clearfix:before, .clearfix:after{
 	content:" ";
