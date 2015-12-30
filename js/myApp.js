@@ -1,7 +1,7 @@
 function TraineeController($scope){ 
 	var req = new XMLHttpRequest();
-    // req.open( "GET", "https://raw.githubusercontent.com/lazyAchyut/LF-JS/master/js/trainee.js", true);
-    req.open( "GET", "js/trainee.js", true);
+    req.open( "GET", "https://raw.githubusercontent.com/lazyAchyut/LF-JS/master/js/trainee.js", true);
+    // req.open( "GET", "js/trainee.js", true);
  
     req.onreadystatechange = function()
     {	
