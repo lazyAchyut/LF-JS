@@ -14,14 +14,15 @@
 			</div>
 			<div class="logo-wrp"> <img src="images/logo-1.png"></div>
 		</div>		
-	
+
+		<!-- start lf-app -->
 		<div lf-app="" class="main-container"> 
 			<div class="content-holder clearfix">
 				<div class="list">
 					
 					<div lf-repeat="trainee" lf-controller="TraineeController" class="trainees">
 						<h2 class="display">List Of Trainees</h2>
-						<a href="#/user/{{roll}}" lf-bind="roll" class="links"></a>
+						<a href="#/user/{{name}}" lf-bind="name" class="links"></a>
 						<img src="images/{{roll}}.png" lf-bind="roll" class="img"/>
 					</div>
 						
@@ -29,6 +30,7 @@
 				<div lf-view="" class="view"></div>
 			</div>
 		</div>
+		<!-- end lf-app -->
 
 		<div class="footer">
 			<div class="links">

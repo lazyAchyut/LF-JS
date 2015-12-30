@@ -40,16 +40,16 @@ function Main(){
     }
 
     //instatiation of objects
-    $dependency = new DependencyInjection();
-    $dataObj = new LfBind();
-    $repeatObj = new LfRepeat();
+    $dependency = new DependencyInjection();  //line no: 74
+    $dataObj = new LfBind();                  //line no: 119
+    $repeatObj = new LfRepeat();              //line no: 307
     
     that.$checkUserDefinedRoute();    //verify whether user has defined routes or not
     if(that.$isUserRoutesDefined){
       $routeObj = new LfRoute();    
       $dependency.$registerDependency('$route' , $routeObj);  //set LfRoute's object as dependency for $route as parameter 
       $dependency.$processMethods(RouteProvider);             //process and invoke RouteProvider function
-      $routeObj.$doRoute(that.$initializeDataBind);                                   //get current URL and render the proper view
+      $routeObj.$doRoute(that.$initializeDataBind);           //get current URL and render the proper view
     }
 
     $dependency.$invokeUserControllers();  //invoke only those controllers that are used in current view
@@ -363,15 +363,15 @@ function LfRepeat(){
       $controllerName = ($currentDetail.getAttribute('lf-controller')).trim();
       $tempScope = $main.$scope[$controllerName];
 
-      if($tempScope.hasOwnProperty($collectionName)){
+      if($tempScope.hasOwnProperty($collectionName)){ 
         for(var i=0;i<$tempScope[$collectionName].length;i++){
-          if($tempScope[$collectionName][i].roll == $index){
+          if($tempScope[$collectionName][i][$key] == $index){
             $innerBinds = $currentDetail.querySelectorAll('[lf-bind]');
             that.$removeElements($currentDetail,$innerBinds);
 
             for(var noOfBinds=0;noOfBinds<$innerBinds.length;noOfBinds++){
               $bindAttr = ($innerBinds[noOfBinds].getAttribute('lf-bind')).trim();
-              if($tempScope[$collectionName][i].hasOwnProperty($bindAttr)){
+              if($tempScope[$collectionName][i].hasOwnProperty($bindAttr)){ 
                 that.$renderRepeat($currentDetail , $innerBinds[noOfBinds] , i , $bindAttr);
               }
             }
