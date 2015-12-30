@@ -40,9 +40,9 @@ function Main(){
     }
 
     //instatiation of objects
-    $dependency = new DependencyInjection();
-    $dataObj = new LfBind();
-    $repeatObj = new LfRepeat();
+    $dependency = new DependencyInjection();  //line no: 74
+    $dataObj = new LfBind();                  //line no: 119
+    $repeatObj = new LfRepeat();              //line no: 307
     
     that.$checkUserDefinedRoute();    //verify whether user has defined routes or not
     if(that.$isUserRoutesDefined){
@@ -362,10 +362,6 @@ function LfRepeat(){
 
       $controllerName = ($currentDetail.getAttribute('lf-controller')).trim();
       $tempScope = $main.$scope[$controllerName];
-
-// console.log($tempScope[$collectionName][9][$key]);
-// console.log($tempScope.$collectionName[4].name);
-      
 
       if($tempScope.hasOwnProperty($collectionName)){ 
         for(var i=0;i<$tempScope[$collectionName].length;i++){
