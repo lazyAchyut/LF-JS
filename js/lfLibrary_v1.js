@@ -49,20 +49,22 @@ function Main(){
       $routeObj = new LfRoute();    
       $dependency.$registerDependency('$route' , $routeObj);  //set LfRoute's object as dependency for $route as parameter 
       $dependency.$processMethods(RouteProvider);             //process and invoke RouteProvider function
-      $routeObj.$doRoute(that.$initializeDataBind);           //get current URL and render the proper view
+      $routeObj.$doRoute();           //get current URL and render the proper view
     }
 
     $dependency.$invokeUserControllers();  //invoke only those controllers that are used in current view
     setTimeout(that.$initializeRepeat,10); //since $invokeUserControllers is asynchronous [Bad Practice using setTimeOut eventhough]
+    setTimeout(that.$initializeDataBind,10);
     window.addEventListener('hashchange' , that.$updateSerivces , false); //update the view if url is changed
   }
 
   this.$updateSerivces = function(){ 
     if($routeObj){        //update only if user has defined routes
-      $routeObj.$doRoute(that.$initializeDataBind);
+      $routeObj.$doRoute();
       that.$scope = {};   //flush $scope when view is changed
       $dependency.$invokeUserControllers();
       setTimeout(that.$initializeRepeat,10);
+      setTimeout(that.$initializeDataBind,10);
     }
   }
 } //end of Main Class
@@ -196,7 +198,7 @@ function LfRoute(){
     var $xhr;                         //XMLHttpRequest object
     var that = this;
 
-    this.$doRoute = function($callback){ 
+    this.$doRoute = function(){ 
       var $matchedRoute = []; //holds route and templateUrl of matched route
       var $urlAfterHash = ''; //portion of url after '#'
       var $currentUrl;      
@@ -216,7 +218,7 @@ function LfRoute(){
         
         if($matchedRoute != null){
           $path = $currentDir + $matchedRoute.templateUrl.trim(); //templateUrl is name of partial file
-          that.$loadView($container , $path , $callback);
+          that.$loadView($container , $path);
         }
         else{ 
           $redirectPath = that.$getOtherwisePath(that.$userDefinedRoutes);
@@ -224,7 +226,7 @@ function LfRoute(){
             window.location.href = $parsedUrl[0] + '#' + $redirectPath;  //set url to redirected url
             $matchedRoute = that.$mapUrlAfterHash($redirectPath); 
             $path =  $currentDir + $matchedRoute.templateUrl.trim();
-            that.$loadView($container , $path , $callback);
+            that.$loadView($container , $path);
           }   
         } 
       }
@@ -274,12 +276,11 @@ function LfRoute(){
     }
     
     //render $container(lf-view) with content from $path    
-    this.$loadView = function($container,$path,$callback){ 
+    this.$loadView = function($container,$path){ 
       $xhr = that.$getXhr();
       $xhr.onreadystatechange = function () {
         if ($xhr.readyState === 4 && $xhr.status == 200) {  
          $container.innerHTML = $xhr.responseText;
-         $callback();
        }
      }
      $xhr.open('GET' , $path , true);
