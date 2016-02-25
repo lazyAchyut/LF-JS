@@ -1,4 +1,4 @@
-# LF-JS
+# Custom Angular JS library
 ## Simplified Angular JS library
 This library was written within a week during front-end training session.
 
