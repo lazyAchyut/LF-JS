@@ -1,10 +1,11 @@
 # LF-JS
 ## Simplified Angular JS library
+This library was written within a week during front-end training session.
 
-> Features:
+> Features included:
 * Two way data binding  
 * Routing page
 * Repeat directives
 
-Demo <a href="http://lazyachyut.github.io/LF-JS/" target="_blank"> Demo </a>
+<a href="http://lazyachyut.github.io/LF-JS/" target="_blank"> Demo </a>
 
